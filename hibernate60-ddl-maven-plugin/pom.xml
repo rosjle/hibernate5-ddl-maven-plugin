@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
@@ -9,11 +10,10 @@
     </parent>
 
     <groupId>de.jpdigital</groupId>
-    <artifactId>hibernate5-ddl-maven-plugin-core</artifactId>
+    <artifactId>hibernate60-ddl-maven-plugin</artifactId>
     <version>2.6.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <name>Maven DDL generator plugin for Hibernate 5 Core</name>
+    <name>Maven DDL generator plugin for Hibernate 6.0</name>
+    <packaging>maven-plugin</packaging>
 
     <url>https://github.com/jpdigital/hibernate5-ddl-maven-plugin</url>
 
@@ -21,13 +21,13 @@
         <system>GitHub</system>
         <url>https://github.com/jpdigital/hibernate5-ddl-maven-plugin/issues</url>
     </issueManagement>
-    
+
     <!--<scm>
         <connection>scm:git:git@github.com:jpdigital/hibernate5-ddl-maven-plugin</connection>
         <developerConnection>scm:git:git@github.com:jpdigital/hibernate5-ddl-maven-plugin</developerConnection>
         <url>git@github.com:jpdigital/hibernate5-ddl-maven-plugin</url>
     </scm>-->
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -39,8 +39,12 @@
         </repository>
     </distributionManagement>
 
+    <prerequisites>
+        <maven>3.0.4</maven>
+    </prerequisites>
+
     <inceptionYear>2016</inceptionYear>
-    
+
     <licenses>
         <license>
             <name>GPLv3 or newer</name>
@@ -49,7 +53,7 @@
     </licenses>
 
     <description>
-        This plugin for Maven wraps the SchemaExport class from Hibernate 5 into a Mojo which
+        This plugin for Maven wraps the SchemaExport class from Hibernate 6 into a Mojo which
         can easily configured from a projects pom.xml
     </description>
 
@@ -65,7 +69,7 @@
             <url>http://www.jp-digital.de</url>
         </developer>
     </developers>
-   
+
     <organization>
         <name>Jens Pelzetter</name>
         <url>http://www.jp-digital.de</url>
@@ -73,68 +77,42 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <github.global.server>github</github.global.server>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-artifact</artifactId>
+            <groupId>de.jpdigital</groupId>
+            <artifactId>hibernate5-ddl-maven-plugin-core</artifactId>
+            <version>2.6.0-SNAPSHOT</version>
         </dependency>
-        
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-core</artifactId>
-        </dependency>
-        
+
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
-            <groupId>org.apache.maven.plugin-testing</groupId>
-            <artifactId>maven-plugin-testing-harness</artifactId>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>6.0.2.Final</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>3.1.0</version>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-envers</artifactId>
+            <version>6.0.2.Final</version>
         </dependency>
-        
         <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
+            <groupId>org.hibernate.tool</groupId>
+            <artifactId>hibernate-tools-ant</artifactId>
+            <version>6.0.2.Final</version>
         </dependency>
-        
-        <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>javax.transaction-api</artifactId>
-        </dependency>
-        
+
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
@@ -144,12 +122,47 @@
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
-        <finalName>hibernate5-ddl-maven-plugin-core</finalName>
+        <finalName>hibernate60-ddl-maven-plugin</finalName>
 
         <plugins>
+            <!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <configuration>
+                    <debug>true</debug>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                    <settingsFile>src/it/settings.xml</settingsFile>
+                    <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+                    <goals>clean package</goals>
+                    <postBuildHookScript>verify</postBuildHookScript>
+                    <filterProperties>
+                        <hibernateVersion>6.0.2.Final</hibernateVersion>
+                        <ddlPluginArtifactId>hibernate60-ddl-maven-plugin</ddlPluginArtifactId>
+                        <ddlPluginVersion>${project.version}</ddlPluginVersion>
+                    </filterProperties>
+                    <streamLogsOnFailures>true</streamLogsOnFailures>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
@@ -163,14 +176,15 @@
                             <goal>descriptor</goal>
                         </goals>
                     </execution>
-                    <!--                    <execution>
+                    <execution>
                         <id>help-goal</id>
                         <goals>
                             <goal>helpmojo</goal>
                         </goals>
-                    </execution>-->
+                    </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -198,6 +212,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
+                    <!--<additionalOptions>add-modules ALL-MODULE-PATH</additionalOptions>-->
+                    <detectLinks>true</detectLinks>
                     <doclint>none</doclint>
                     <source>8</source>
                 </configuration>
@@ -240,6 +256,7 @@
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
@@ -247,6 +264,9 @@
                     <linkXref>true</linkXref>
                     <sourceEncoding>utf-8</sourceEncoding>
                     <targetJdk>1.8</targetJdk>
+                    <excludeRoots>
+                        <excludeRoot>target/generated-sources/plugin</excludeRoot>
+                    </excludeRoots>
                 </configuration>
             </plugin>
 
@@ -254,13 +274,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <configuration>
-             
                 </configuration>
             </plugin>
-            
         </plugins>
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
@@ -274,15 +292,17 @@
                     <additionalparam>-Xdoclint:none</additionalparam>
                     <author>true</author>
                     <breakiterator>true</breakiterator>
-                    <docfilessubdirs>true</docfilessubdirs>
-                    <doclint>none</doclint>
                     <charset>UTF-8</charset>
                     <docencoding>UTF-8</docencoding>
+                    <docfilessubdirs>true</docfilessubdirs>
+                    <doclint>none</doclint>
                     <encoding>UTF-8</encoding>
+                    <detectLinks>true</detectLinks>
                     <keywords>true</keywords>
-                    <!--
+                    <!--                
                     <links>
                         <link>http://docs.oracle.com/javase/7/docs/api/</link>
+                        <link>http://docs.jboss.org/hibernate/orm/4.3/javadocs/</link>
                     </links>
                     -->
                     <show>private</show>
@@ -294,6 +314,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
@@ -301,6 +322,11 @@
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+            </plugin>
+
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
@@ -312,8 +338,12 @@
                     <linkXref>true</linkXref>
                     <sourceEncoding>utf-8</sourceEncoding>
                     <targetJdk>1.8</targetJdk>
+                    <excludeRoots>
+                        <excludeRoot>target/generated-sources/plugin</excludeRoot>
+                    </excludeRoots>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -331,10 +361,62 @@
     </reporting>
 
     <profiles>
-        
         <profile>
+            <id>release</id>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-plugin-plugin</artifactId>
+                        <configuration>
+                            <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>mojo-descriptor</id>
+                                <goals>
+                                    <goal>descriptor</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>help-goal</id>
+                                <goals>
+                                    <goal>helpmojo</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                            <optimize>true</optimize>
+                            <debug>true</debug>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <trimStackTrace>false</trimStackTrace>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <configuration>
+                            <linkXref>true</linkXref>
+                            <sourceEncoding>utf-8</sourceEncoding>
+                            <targetJdk>1.8</targetJdk>
+                            <excludeRoots>
+                                <excludeRoot>target/generated-sources/plugin</excludeRoot>
+                            </excludeRoots>
+                        </configuration>
+                    </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-site-plugin</artifactId>
@@ -343,9 +425,72 @@
                             <skipDeploy>true</skipDeploy>
                         </configuration>
                     </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <!--<phase>verify</phase>-->
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <author>true</author>
+                            <breakiterator>true</breakiterator>
+                            <charset>UTF-8</charset>
+                            <docencoding>UTF-8</docencoding>
+                            <docfilessubdirs>true</docfilessubdirs>
+                            <doclint>none</doclint>
+                            <encoding>UTF-8</encoding>
+                            <detectLinks>true</detectLinks>
+                            <keywords>true</keywords>
+                            <!--                
+                            <links>
+                                <link>http://docs.oracle.com/javase/7/docs/api/</link>
+                                <link>http://docs.jboss.org/hibernate/orm/4.3/javadocs/</link>
+                            </links>
+                            -->
+                            <show>private</show>
+                            <source>8</source>
+                            <version>true</version>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <!--<phase>verifiy</phase>-->
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
-            
+
             <reporting>
                 <plugins>
                     <plugin>
@@ -359,7 +504,7 @@
                 </plugins>
             </reporting>
         </profile>
-        
+
         <profile>
             <id>gh-page</id>
             <build>
@@ -410,23 +555,26 @@
                             <linkXref>true</linkXref>
                             <sourceEncoding>utf-8</sourceEncoding>
                             <targetJdk>1.8</targetJdk>
+                            <excludeRoots>
+                                <excludeRoot>target/generated-sources/plugin</excludeRoot>
+                            </excludeRoots>
                         </configuration>
                     </plugin>
-            
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-site-plugin</artifactId>
                         <configuration>
                         </configuration>
                     </plugin>
-                    
+
                     <plugin>
                         <groupId>com.github.github</groupId>
                         <artifactId>site-maven-plugin</artifactId>
                         <configuration>
                             <message>Updated project site for ${project.version}</message>
                             <repositoryName>hibernate5-ddl-maven-plugin</repositoryName>
-                            <path>hibernate5-ddl-maven-plugin-core</path>
+                            <path>hibernate60-ddl-maven-plugin</path>
                         </configuration>
                         <executions>
                             <execution>
@@ -437,9 +585,85 @@
                             </execution>
                         </executions>
                     </plugin>
+
                 </plugins>
             </build>
+
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-plugin-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <author>true</author>
+                            <breakiterator>true</breakiterator>
+                            <charset>UTF-8</charset>
+                            <docencoding>UTF-8</docencoding>
+                            <docfilessubdirs>true</docfilessubdirs>
+                            <doclint>none</doclint>
+                            <encoding>UTF-8</encoding>
+                            <detectLinks>true</detectLinks>
+                            <keywords>true</keywords>
+                            <!--                
+                            <links>
+                                <link>http://docs.oracle.com/javase/7/docs/api/</link>
+                                <link>http://docs.jboss.org/hibernate/orm/4.3/javadocs/</link>
+                            </links>
+                            -->
+                            <show>private</show>
+                            <source>8</source>
+                            <version>true</version>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jxr-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <configuration>
+                            <trimStackTrace>false</trimStackTrace>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <configuration>
+                            <linkXref>true</linkXref>
+                            <sourceEncoding>utf-8</sourceEncoding>
+                            <targetJdk>1.8</targetJdk>
+                            <excludeRoots>
+                                <excludeRoot>target/generated-sources/plugin</excludeRoot>
+                            </excludeRoots>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>dependencies</report>
+                                    <report>scm</report>
+                                    <report>license</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
         </profile>
     </profiles>
+
 
 </project>
